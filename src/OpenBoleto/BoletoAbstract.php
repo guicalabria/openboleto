@@ -174,6 +174,20 @@ abstract class BoletoAbstract
     protected $sequencial;
 
     /**
+     * Define a linha digitável
+     *
+     * @var string
+     */
+    protected $linhadigitavel;
+    
+    /**
+     * Define o código numérico para o código de barras
+     *
+     * @var string
+     */
+    protected $codigobarra;
+
+    /**
      * Campo de uso do banco no boleto
      * @var string
      */
@@ -282,6 +296,12 @@ abstract class BoletoAbstract
     protected $logoBanco;
     
     /**
+     * Diretório temporário para criação da imagem do código de barras
+     * @var string
+     */
+    protected $diretorioTemp;
+    
+    /**
     * Array que sera exportada pelo metodo getData
     * @var array
     */
@@ -307,7 +327,6 @@ abstract class BoletoAbstract
                 $this->{'set' . $param}($value);
             }
         }
-
         // Marca a data de emissão para hoje, caso não especificada
         if (!$this->getDataDocumento()) {
             $this->setDataDocumento(new DateTime());
@@ -350,6 +369,28 @@ abstract class BoletoAbstract
     {
         return $this->agencia;
     }
+    
+    /**
+     * Define o diretório temporário
+     *
+     * @param string $diretorioTemp
+     * @return string
+     */
+    public function setDiretorioTemp($diretorioTemp)
+    {
+        $this->diretorioTemp = $diretorioTemp;
+        return $this->diretorioTemp;
+    }
+
+    /**
+     * Retorna o diretório temporário
+     *
+     * @return string
+     */
+    public function getDiretorioTemp()
+    {
+        return $this->diretorioTemp;
+    }
 
     /**
      * Define o dígito da agência
@@ -384,7 +425,7 @@ abstract class BoletoAbstract
     public function setCarteira($carteira)
     {
         if (!in_array($carteira, $this->getCarteiras())) {
-            throw new Exception("Carteira não disponível!");
+            throw new Exception("Carteira não disponível!".$carteira);
         }
 
         $this->carteira = $carteira;
@@ -653,6 +694,40 @@ abstract class BoletoAbstract
     public function getSequencial()
     {
         return $this->sequencial;
+    }
+
+    /**
+     * Define a linha digitável do boleto
+     *
+     * @param string $linhadigitavel
+     * @return BoletoAbstract
+     */
+    public function setLinhadigitavel($linhadigitavel)
+    {
+        $this->linhadigitavel = $linhadigitavel;
+        return $this;
+    }
+    
+    /**
+     * Define o código numérico para o código de barras
+     *
+     * @param string $codigobarra
+     * @return BoletoAbstract
+     */
+    public function setCodigobarra($codigobarra)
+    {
+        $this->codigobarra = $codigobarra;
+        return $this;
+    }
+
+    /**
+     * Retorna o código numérico para o código de barras
+     *
+     * @return string
+     */
+    public function getCodigobarra()
+    {
+        return $this->codigobarra;
     }
 
     /**
@@ -1177,6 +1252,13 @@ abstract class BoletoAbstract
      */
     public function getNossoNumero($incluirFormatacao = true)
     {
+        if ( isset($this->codigobarra) && $this->codigobarra!='' )
+        {
+           if ( $this->codigoBanco=='001' && $this->carteira=='17' )
+           {
+              return substr($this->codigobarra,-19,17);
+           }
+        }
         $numero = $this->gerarNossoNumero();
 
         // TODO: Fazer cache do nosso número para evitar múltiplas chamadas
@@ -1280,9 +1362,6 @@ abstract class BoletoAbstract
             'numero_febraban' => $this->getNumeroFebraban(),
             'imprime_instrucoes_impressao' => $this->getImprimeInstrucoesImpressao()
         );
-        
-        
-        
         $this->data = array_merge($this->data,$this->getViewVars());
         
         extract($this->data);
@@ -1350,6 +1429,16 @@ abstract class BoletoAbstract
      */
     public function getLinhaDigitavel()
     {
+        if ( $this->linhadigitavel!='' )
+        {
+           $part1 = substr($this->linhadigitavel,0,10);
+           $part2 = substr($this->linhadigitavel,10,11);
+           $part3 = substr($this->linhadigitavel,21,11);
+           $cd = substr($this->linhadigitavel,32,1);
+           $part4 = substr($this->linhadigitavel,33);
+           return "$part1 $part2 $part3 $cd $part4";
+        }
+        
         $chave = $this->getCampoLivre();
 
         // Break down febraban positions 20 to 44 into 3 blocks of 5, 10 and 10
@@ -1395,74 +1484,73 @@ abstract class BoletoAbstract
         return "$part1 $part2 $part3 $cd $part4";
     }
 
-    /**
+  /**
      * Retorna a string contendo as imagens do código de barras, segundo o padrão Febraban
      *
      * @return string
      */
     public function getImagemCodigoDeBarras()
     {
-        $codigo = $this->getNumeroFebraban();
-
-        $barcodes = array('00110', '10001', '01001', '11000', '00101', '10100', '01100', '00011', '10010', '01010');
-
-        for ($f1 = 9; $f1 >= 0; $f1--) {
-            for ($f2 = 9; $f2 >= 0; $f2--) {
-
-                $f = ($f1 * 10) + $f2;
-                $texto = '';
-
-                for ($i = 1; $i < 6; $i++) {
-                    $texto .= substr($barcodes[$f1], ($i - 1), 1) . substr($barcodes[$f2], ($i - 1), 1);
-                }
-
-                $barcodes[$f] = $texto;
-            }
+        if ( $this->codigobarra!='' )
+        {
+           $codigo = $this->codigobarra;
         }
-
-        // Guarda inicial
-        $retorno = '<div class="barcode">' .
-        '<div class="black thin"></div>' .
-        '<div class="white thin"></div>' .
-        '<div class="black thin"></div>' .
-        '<div class="white thin"></div>';
-
-        if (strlen($codigo) % 2 != 0) {
-            $codigo = "0" . $codigo;
+        else $codigo = $this->getNumeroFebraban();
+        
+        $cbinicio = "NNNN";
+        $cbfinal = "WNN";
+        $cbnumeros = array("NNWWN", "WNNNW", "NWNNW", "WWNNN", "NNWNW", "WNWNN", "NWWNN", "NNNWW", "WNNWN", "NWNWN");
+        $cbresult = '';
+        if ( is_numeric($codigo)&(!(strlen($codigo)&1)) ) 
+        {      
+           for($i = 0; $i < strlen($codigo); $i = $i+2) 
+           {
+       	    
+          	  $cbvar1 = $cbnumeros[$codigo[$i]];
+          	  $cbvar2 = $cbnumeros[$codigo[$i+1]]; 
+          	  
+             for ($j = 0; $j <= 4; $j++) 
+             {
+       	        $cbresult .= $cbvar1[$j].$cbvar2[$j];
+             }
+             
+           }
+           $mapaI25 = $cbinicio.$cbresult.$cbfinal;
         }
-
-        // Draw dos dados
-        while (strlen($codigo) > 0) {
-
-            $i = (int) round(self::caracteresEsquerda($codigo, 2));
-            $codigo = self::caracteresDireita($codigo, strlen($codigo) - 2);
-            $f = $barcodes[$i];
-
-            for ($i = 1; $i < 11; $i += 2) {
-
-                if (substr($f, ($i - 1), 1) == "0") {
-                    $f1 = 'thin';
-                } else {
-                    $f1 = 'large';
-                }
-
-                $retorno .= "<div class='black {$f1}'></div>";
-
-                if (substr($f, $i, 1) == "0") {
-                    $f2 = 'thin';
-                } else {
-                    $f2 = 'large';
-                }
-
-                $retorno .= "<div class='white {$f2}'></div>";
-            }
+        else return false;
+        
+        $espmin = 1;	
+        $espmin--;
+        $altura = 50;
+        $largura = (strlen($mapaI25)/5*((($espmin+1)*3)+(($espmin+3)*2)))+20;
+        
+        $im = imagecreate($largura, $altura);
+        //$im = imagecreatetruecolor($largura, $altura);
+        imagecolorallocate($im, 255, 255, 255);
+        
+        $spH = 10;
+        for($k = 0; $k < strlen($mapaI25); $k++) {
+        	
+          if (!($k&1)) { $corbarra = imagecolorallocate($im,0,0,0); }
+          else { $corbarra = imagecolorallocate($im,255,255,255); }
+        	
+          if ($mapaI25[$k] == 'N'){
+        	  imagefilledrectangle($im, $spH, $altura-3, $spH+$espmin, 2, $corbarra);
+        	  $spH = $spH+$espmin+1;	 
+          } else {
+        	  imagefilledrectangle($im, $spH, $altura-3, $spH+$espmin+2, 2, $corbarra);
+        	  $spH = $spH+$espmin+3;	 
+          }
+        	
         }
-
-        // Final
-        return $retorno . '<div class="black large"></div>' .
-        '<div class="white thin"></div>' .
-        '<div class="black thin"></div>' .
-        '</div>';
+        
+        if ( $this->diretorioTemp!='' ) $dirimagem = $this->diretorioTemp.'barra.jpg';
+        else $dirimagem = './barra.jpg';
+        imagejpeg($im,$dirimagem);
+        imagedestroy($im);
+        $imageContent = file_get_contents($this->diretorioTemp.'barra.jpg');
+        $imageData = base64_encode($imageContent);
+        return $imageData;
     }
     
     /**

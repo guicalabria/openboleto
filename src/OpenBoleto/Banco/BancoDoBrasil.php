@@ -149,7 +149,8 @@ class BancoDoBrasil extends BoletoAbstract
     public function getCampoLivre()
     {
         $length = strlen($this->getConvenio());
-        $nossoNumero = $this->gerarNossoNumero();
+        $nossoNumero = $this->getSequencial();
+
         // Nosso número sem o DV - repare que ele só vem com DV quando o mesmo é menor que 17 caracteres
         // Então removemos o dígito (e o traço) apenas quando seu tamanho for menor que 17 caracteres
         strlen($this->getNossoNumero()) < 17 and $nossoNumero = substr($nossoNumero, 0, -2);

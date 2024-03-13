@@ -26,6 +26,12 @@
         display:none;
     }
 }
+@page {
+    margin-right: 0;
+    overflow: visible;
+    width: 200mm;
+    height: 260mm;
+}
 
 body{
     background-color: #ffffff;
@@ -34,7 +40,7 @@ body{
 
 .table-boleto {
     font: 9px Arial;
-    width: 666px;
+    width: 700px;
 }
 
 .table-boleto td {
@@ -103,16 +109,16 @@ body{
 }
 
 .table-boleto .logocontainer {
-    width: 257px;
+    width: 60px;
     display: inline-block;
 }
 
 .table-boleto .logobanco img {
-    margin-bottom: -5px;
-    height: 27px;
+    margin-bottom: -2px;
+    height: 23px;
 }
 
-.table-boleto .codbanco {
+.codbanco {
     font: bold 20px Arial;
     padding: 1px 5px;
     display: inline;
@@ -122,8 +128,8 @@ body{
     margin-left: 25px;
 }
 
-.table-boleto .linha-digitavel {
-    font: bold 14px Arial;
+.linha-digitavel {
+    font: bold 13px Arial;
     display: inline-block;
     width: 406px;
     text-align: right;

@@ -33,7 +33,7 @@
 <body>
 
     <div style="width: 666px">
-    	<?php if ($imprime_instrucoes_impressao) :?>
+    <?php if ($imprime_instrucoes_impressao) :?>
         <div class="noprint info">
             <h2>Instruções de Impressão</h2>
             <ul>
@@ -50,39 +50,33 @@
             <div class="linha-pontilhada" style="margin-bottom: 20px;">Recibo do pagador</div>
         </div>
         <?php endif ?>
-
-        <div class="info-empresa">
-            <?php if ($logotipo) : ?>
-            <div style="display: inline-block;">
-                <img alt="logotipo" src="<?php echo $logotipo; ?>" />
-            </div>
-            <?php endif ?>
-            <div style="display: inline-block; vertical-align: super;">
-                <div><strong><?php echo $cedente; ?></strong></div>
-                <div><?php echo $cedente_cpf_cnpj; ?></div>
-                <div><?php echo $cedente_endereco1; ?></div>
-                <div><?php echo $cedente_endereco2; ?></div>
-            </div>
-        </div>
-        <br>
-
         <table class="table-boleto" cellpadding="0" cellspacing="0" border="0">
             <tbody>
             <tr>
-                <td valign="bottom" colspan="8" class="noborder nopadding">
-                    <div class="logocontainer">
-                        <div class="logobanco">
-                            <img src="<?php echo $logo_banco; ?>" alt="logotipo do banco">
+                <td valign="bottom" colspan="5" class="noborder nopadding">
+                    <table class="table-boleto" cellpadding="0" cellspacing="0" border="0">
+                    <tbody>
+                    <tr>
+                    <td valign="bottom" class="noborder nopadding">
+                        <div class="logocontainer">
+                            <div class="logobanco" style="display:inline;">
+                                <img src="<?php echo $logo_banco; ?>" alt="logotipo do banco" height="27" style="display:inline;">
+                            </div>
                         </div>
+                    </td>
+                    <td valign="bottom" class="noborder nopadding">
                         <div class="codbanco"><?php echo $codigo_banco_com_dv ?></div>
-                    </div>
-                    <div class="linha-digitavel"><?php echo $linha_digitavel ?></div>
+                    </td>
+                    <td valign="bottom" class="noborder nopadding" style="width:416px;">
+                        <div class="linha-digitavel"><?php echo $linha_digitavel ?></div>
+                    </td>
+                    </table>
                 </td>
             </tr>
             <tr>
                 <td colspan="2" width="250">
                     <div class="titulo">Beneficiário</div>
-                    <div class="conteudo"><?php echo $cedente ?></div>
+                    <div class="conteudo"><?php echo $cedente ?><br /><?=$cedente_endereco1;?><br /><?=$cedente_endereco2;?></div></div>
                 </td>
                 <td>
                     <div class="titulo">CPF/CNPJ</div>
@@ -129,7 +123,7 @@
                     <div class="conteudo rtl"><?php echo $desconto_abatimento ?></div>
                 </td>
                 <td>
-                    <div class="titulo">(=) Valor Documento</div>
+                    <div class="titulo">(=) Valor do Documento</div>
                     <div class="conteudo rtl"><?php echo $valor_documento ?></div>
                 </td>
             </tr>
