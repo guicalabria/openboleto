@@ -1,6 +1,7 @@
 {
-    "name": "openboleto/openboleto",
+    "name": "guicalabria/openboleto",
     "type": "library",
+    "version": "1.0",
     "description": "Biblioteca para geração de boletos bancários.",
     "keywords": [
         "boleto",
